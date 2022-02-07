@@ -107,7 +107,9 @@ iperf3 -c MACHINE_C_VLAN_INTERFACE -u -S 0x14 -t20
     TSN switches need to be configured to allow traffic from a given VLAN on specific switch ports. For the NXP SJA1110 it can be done in the SDK available for download [here](https://www.nxp.com/products/interfaces/ethernet-/automotive-ethernet-switches/multi-gig-safe-and-secure-tsn-ethernet-switch-with-integrated-100base-t1-phys:SJA1110). VLAN ports membership on off-the-shelf managed switches often can be configured using a web interface.
 
     To configure VLAN on the NXP SJA1110 switch, add VLAN 30 to the membership fields of all the switch ports. In the SJA1110 SDK GUI open the `Peripheral` configuration, select the switch fabric, then click on `VLAN Lookup Table` dialogue. Then tick all ports in the section `VMEMB_PORT`, all ports in the section `BC_DOMAIN`, all ports in `TAG_PORT` and, finally, set the `VLANID` to 30.
-
+    
+    使用ls1028a做TSN交换机，用命令行配置交换机端口VLAN，VMEMB_PORT，BC_DOMAIN，TAG_PORT这几个参数如何对应？VLANID设置为30.
+    
     To make the effect of the DDS-TSN integration easily visible in this demo, configure the switch to limit the link speed of the `vehicle_control command` to `100 Mbps`.
 
 ## Execution
