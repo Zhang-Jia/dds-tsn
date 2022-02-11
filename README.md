@@ -16,8 +16,8 @@ As illustrated below, this demo uses three machines connected to a TSN Ethernet 
 The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [Connext DDS](dds_tsn_demo/src/dds_tsn_profile_connext.xml) and [Fast DDS](dds_tsn_demo/src/dds_tsn_profile_fastdds.xml). The XML files bind the DDS communication sockets to the VLAN interface, which has a built-in VLAN tagging rule assigning the outgoing traffic a higher priority, as we describe in configuration `Option A`. Another option is to map the DSCP/TOS filed in the IP header to the VLAN PCP value, which we describe in configuration `Option B`.
 
 ## Prerequisites
-- Three machines with Ubuntu 20.04, machines A and B can be embedded ARM-based systems, machine C will benefit from a discrete GPU.
-- A TSN-capable Ethernet switch with PCP and VLAN support included in IEEE 802.1Q-2014 and onwards. For example, the NXP [SJA1110](https://www.nxp.com/products/interfaces/ethernet-/automotive-ethernet-switches/multi-gig-safe-and-secure-tsn-ethernet-switch-with-integrated-100base-t1-phys:SJA1110). In our experiment, we use the SJA1110 switch on the [S32G-VNP-RDB](https://www.nxp.com/design/designs/s32g-reference-design-for-vehicle-network-processing:S32G-VNP-RDB) board, which is the S32G reference design for vehicle network processing.
+- 3台机器使用ubuntu20.04，A/B基于嵌入式ARM平台，C需要使用GPU.Three machines with Ubuntu 20.04, machines A and B can be embedded ARM-based systems, machine C will benefit from a discrete GPU.
+- 替换为使用ls1028a做TSN交换机.A TSN-capable Ethernet switch with PCP and VLAN support included in IEEE 802.1Q-2014 and onwards. For example, the NXP [SJA1110](https://www.nxp.com/products/interfaces/ethernet-/automotive-ethernet-switches/multi-gig-safe-and-secure-tsn-ethernet-switch-with-integrated-100base-t1-phys:SJA1110). In our experiment, we use the SJA1110 switch on the [S32G-VNP-RDB](https://www.nxp.com/design/designs/s32g-reference-design-for-vehicle-network-processing:S32G-VNP-RDB) board, which is the S32G reference design for vehicle network processing.
 - ROS2 Foxy base and `iproute2` for the `tc` command on machine A:
     follow the official [ROS2 installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html#set-locale) to install ROS2 Foxy *base*.
     Then install other dependencies:
@@ -25,6 +25,7 @@ The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [C
     sudo apt install -y python3-colcon-ros iproute2
     ```
 - To use configuration Option B described in the *Configuration* section below, build the following kernel modules for machine A to enable Linux Traffic Control (tc) actions, packet classification, and U32 filter for outgoing packets:
+- 使用`Option B`时，A需要配置内核开启如下功能：
     ```
     CONFIG_NET_CLS_ACT=y
     CONFIG_NET_CLS_FLOW=y
@@ -37,14 +38,14 @@ The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [C
     ```bash
     sudo apt install -y iperf3
     ```
-- ROS2 Foxy and Gazebo on machine C:
+- C上运行ROS2和Gazebo(运动仿真).ROS2 Foxy and Gazebo on machine C:
     follow the official [ROS2 installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html#set-locale) to install ROS2 Foxy *desktop*.
     Then install Gazebo and other dependencies:
     ```bash
     sudo apt install -y python3-colcon-ros ros-foxy-gazebo-ros ros-foxy-gazebo-plugins iperf3 iproute2
     ```
 
-## Installation
+## Installation 安装
 1. Our demonstration supports the Fast DDS, which is pre-installed and the default DDS middleware layer in ROS2 Foxy, and the RTI Connext DDS. The RTI Connext DDS can be installed by following the documentation [here](https://github.com/ros2/rmw_connextdds) on machines A and C.
     - For an Intel machine:
        ```bash
@@ -69,7 +70,7 @@ The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [C
     source install/setup.sh
     ```
 
-## Configuration
+## Configuration 配置
 ### Option A: VLAN-to-PCP mapping using egress-qos-map
 No specific Linux kernel modules are required for this option.
 On machine A, create a VLAN interface with the IP address ending with `.2`:
@@ -92,7 +93,7 @@ PIF=eth0 NETMASK=10.10 OPTION_B=on ./scripts/make_vlan.bash
 # to verify the configuration, send iperf3 streams to machine C and check the packet TOS and PCP value using Wireshark
 iperf3 -c MACHINE_C_VLAN_INTERFACE -u -S 0x14 -t20
 ```
-### Common configuration
+### Common configuration 通用配置
 1. On machine C, create a virtual interface with IP addresss ending with `.3`, for example:
    ```bash
    PIF=eth0 NETMASK=10.10 IP_SUFFIX=3 ./scripts/make_vlan.bash
@@ -102,17 +103,15 @@ iperf3 -c MACHINE_C_VLAN_INTERFACE -u -S 0x14 -t20
    ping -c 3 192.168.30.2 # machine A
    ping -c 3 192.168.30.3 # machine C
    ```
-1. TSN switch configuration
+1. TSN switch configuration TSN交换机配置
 
     TSN switches need to be configured to allow traffic from a given VLAN on specific switch ports. For the NXP SJA1110 it can be done in the SDK available for download [here](https://www.nxp.com/products/interfaces/ethernet-/automotive-ethernet-switches/multi-gig-safe-and-secure-tsn-ethernet-switch-with-integrated-100base-t1-phys:SJA1110). VLAN ports membership on off-the-shelf managed switches often can be configured using a web interface.
 
     To configure VLAN on the NXP SJA1110 switch, add VLAN 30 to the membership fields of all the switch ports. In the SJA1110 SDK GUI open the `Peripheral` configuration, select the switch fabric, then click on `VLAN Lookup Table` dialogue. Then tick all ports in the section `VMEMB_PORT`, all ports in the section `BC_DOMAIN`, all ports in `TAG_PORT` and, finally, set the `VLANID` to 30.
-    
-    使用ls1028a做TSN交换机，用命令行配置交换机端口VLAN，VMEMB_PORT，BC_DOMAIN，TAG_PORT这几个参数如何对应？VLANID设置为30.
-    
+
     To make the effect of the DDS-TSN integration easily visible in this demo, configure the switch to limit the link speed of the `vehicle_control command` to `100 Mbps`.
 
-## Execution
+## Execution 执行
 1. Start the `iperf3` server on machine C:
     ```bash
     iperf3 -s > /dev/null 2>&1 &
