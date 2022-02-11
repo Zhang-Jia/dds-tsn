@@ -15,8 +15,8 @@ As illustrated below, this demo uses three machines connected to a TSN Ethernet 
 
 The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [Connext DDS](dds_tsn_demo/src/dds_tsn_profile_connext.xml) and [Fast DDS](dds_tsn_demo/src/dds_tsn_profile_fastdds.xml). The XML files bind the DDS communication sockets to the VLAN interface, which has a built-in VLAN tagging rule assigning the outgoing traffic a higher priority, as we describe in configuration `Option A`. Another option is to map the DSCP/TOS filed in the IP header to the VLAN PCP value, which we describe in configuration `Option B`.
 
-## Prerequisites
-- 3台机器使用ubuntu20.04，A/B基于嵌入式ARM平台，C需要使用GPU.Three machines with Ubuntu 20.04, machines A and B can be embedded ARM-based systems, machine C will benefit from a discrete GPU.
+## 先决条件
+- 3台机器使用ubuntu20.04，A/B基于嵌入式ARM平台，C需要使用GPU.A和B使用ls1028a，使用real time edge操作系统，尝试安装ROS2, C使用笔记本电脑，安装ubuntu20.04.
 - 替换为使用ls1028a做TSN交换机.A TSN-capable Ethernet switch with PCP and VLAN support included in IEEE 802.1Q-2014 and onwards. For example, the NXP [SJA1110](https://www.nxp.com/products/interfaces/ethernet-/automotive-ethernet-switches/multi-gig-safe-and-secure-tsn-ethernet-switch-with-integrated-100base-t1-phys:SJA1110). In our experiment, we use the SJA1110 switch on the [S32G-VNP-RDB](https://www.nxp.com/design/designs/s32g-reference-design-for-vehicle-network-processing:S32G-VNP-RDB) board, which is the S32G reference design for vehicle network processing.
 - ROS2 Foxy base and `iproute2` for the `tc` command on machine A:
     follow the official [ROS2 installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html#set-locale) to install ROS2 Foxy *base*.
@@ -33,19 +33,19 @@ The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [C
     CONFIG_NET_CLS_U32=y
     CONFIG_CLS_U32_MARK=y
     ```
-  In our experiment, the machine A runs on the i.MX 8M [NavQ](https://nxp.gitbook.io/8mmnavq/) Linux companion computer platform. The NavQ kernel can be configured and built following instructions [here](https://github.com/NXPmicro/meta-nxp-hovergames/tree/demo).
-- `iperf3` on machine B:
+  在本次试验中，机器A使用ls1028a
+- 机器B运行`iperf3`:
     ```bash
     sudo apt install -y iperf3
     ```
-- C上运行ROS2和Gazebo(运动仿真).ROS2 Foxy and Gazebo on machine C:
-    follow the official [ROS2 installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html#set-locale) to install ROS2 Foxy *desktop*.
-    Then install Gazebo and other dependencies:
+- 机器C运行ROS2 Foxy和Gazebo(运动仿真):
+    使用如下官方链接 [ROS2 installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html#set-locale) 安装 ROS2 Foxy *桌面版*.
+    然后安装Gazebo和其他依赖：
     ```bash
     sudo apt install -y python3-colcon-ros ros-foxy-gazebo-ros ros-foxy-gazebo-plugins iperf3 iproute2
     ```
 
-## Installation 安装
+## 安装
 1. Our demonstration supports the Fast DDS, which is pre-installed and the default DDS middleware layer in ROS2 Foxy, and the RTI Connext DDS. The RTI Connext DDS can be installed by following the documentation [here](https://github.com/ros2/rmw_connextdds) on machines A and C.
     - For an Intel machine:
        ```bash
