@@ -40,7 +40,8 @@ The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [C
     ```
 - 机器C运行ROS2 Foxy和Gazebo(运动仿真):
     使用如下官方链接 [ROS2 installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html#set-locale) 安装 ROS2 Foxy *桌面版*.
-    然后安装Gazebo和其他依赖：
+    然后安装Gazebo，使用如下链接[ROS/Gazebo installation](http://gazebosim.org/tutorials?tut=ros_wrapper_versions&cat=connect_ros)
+    安装其他依赖：
     ```bash
     sudo apt install -y python3-colcon-ros ros-foxy-gazebo-ros ros-foxy-gazebo-plugins iperf3 iproute2
     ```
