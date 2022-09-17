@@ -66,7 +66,8 @@ The DDS-TSN mapping demo instructions below leverage the DDS XML profiles for [C
     ```bash
     git clone https://github.com/NXP/dds-tsn.git
     cd dds_tsn
-    source /opt/ros/foxy/setup.bash
+    
+    source ~/ros2_foxy/ros2-linux/setup.bash
     colcon build
     source install/setup.sh
     ```
